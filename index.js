@@ -1,15 +1,42 @@
-const samples = [
+const productsList = document.querySelector(".products-list");
+const data = [
   {
+    id: "id1",
     name: "test1",
     desc: "desc1",
     price: 99,
-    amount: 22,
     img: "link",
   },
-  {},
-  {},
+  {
+    id: "id2",
+    name: "test2",
+    desc: "desc2",
+    price: 123,
+    img: "link",
+  },
+  {
+    id: "id3",
+    name: "test3",
+    desc: "desc4",
+    price: 54,
+    img: "link",
+  },
+  {
+    id: "id4",
+    name: "test5",
+    desc: "desc5",
+    price: 23,
+    img: "link",
+  },
+  {
+    id: "id5",
+    name: "test6",
+    desc: "desc6",
+    price: 654,
+    img: "link",
+  },
 ];
-  
+
 class Product {
   constructor(id, name, desc, price, img, amount = 1) {
     this.id = id;
@@ -69,6 +96,7 @@ class User {
     this.balance = balance;
     this.creationDate = new Date();
     this.basket = new Basket();
+    this.isLoggedIn = false;
   }
 
   deposit(amount) {
@@ -86,6 +114,10 @@ class User {
     this.balance -= price;
     this.basket.clear();
   }
+
+  logOut() {
+    this.isLoggedIn = false;
+  }
 }
 
 class Authorization {
@@ -94,6 +126,27 @@ class Authorization {
 
     if (userId !== null) throw new Error("User already exists");
     localStorage.setItem(user.logIn, JSON.stringify(user));
+  }
+  /*
+
+  localStorage = {
+    John : user class,
+    Marry: user
+  }
+
+  John => user class John
+
+
+
+  */
+
+  logIn(password, username) {
+    const user = JSON.parse(localStorage.getItem(username));
+
+    if (!user) throw new Error("User does not exist");
+    if (password !== user.password) throw new Error("Wrong password");
+    user.isLoggedIn = true;
+    return true;
   }
 }
 
@@ -119,5 +172,47 @@ const user1 = new User("name1", "email1", "password1", "logIn1");
 console.log(user1);
 
 const authorization1 = new Authorization();
-authorization1.signUp(user1);
-authorization1.signUp(user1);
+// authorization1.signUp(user1);
+// authorization1.signUp(user1);
+authorization1.logIn(user1.password, user1.logIn);
+console.log(authorization1.logIn(user1.password, user1.logIn));
+
+class Store {
+  constructor() {
+    this.currentUser = null;
+    this.products = null;
+  }
+
+  //   <li>
+  //   <div class="product-img"></div>
+  //   <h2>Title1</h2>
+  //   <p>Description1</p>
+  //   <span>Price1</span>
+  //   <button>Add to basket</button>
+  //   </li>
+
+  renderPage() {
+    this.getData();
+    this.products.forEach(({ id, name, desc, price, img }) => {
+      let li = document.createElement("li");
+      li.innerHTML = `
+      <div class="product-img"></div>
+      <h2>${name}</h2>
+      <p>${desc}</p>
+      <span>${price}</span>
+      <button>Add to basket</button>`;
+      productsList.appendChild(li);
+    });
+  }
+
+  getData() {
+    this.products = data.map(
+      ({ id, name, desc, price, img }) =>
+        new Product(id, name, desc, price, img)
+    );
+  }
+}
+
+const store1 = new Store();
+store1.renderPage();
+console.log(store1);
