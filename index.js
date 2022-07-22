@@ -1,4 +1,3 @@
-const productsList = document.querySelector(".products-list");
 const data = [
   {
     id: "id1",
@@ -88,11 +87,11 @@ class Basket {
 }
 
 class User {
-  constructor(name, email, password, logIn, balance = 0) {
+  constructor(name, email, username, password, balance = 0) {
     this.name = name;
     this.email = email;
     this.password = password;
-    this.logIn = logIn;
+    this.username = username;
     this.balance = balance;
     this.creationDate = new Date();
     this.basket = new Basket();
@@ -121,11 +120,14 @@ class User {
 }
 
 class Authorization {
-  signUp(user) {
-    let userId = localStorage.getItem(user.logIn);
+  signUp(name, email, username, password) {
+    let user = localStorage.getItem(username);
 
-    if (userId !== null) throw new Error("User already exists");
-    localStorage.setItem(user.logIn, JSON.stringify(user));
+    // if user exist
+    if (user !== null) throw new Error("User already exists");
+    user = new User(name, email, username, password);
+    localStorage.setItem(username, JSON.stringify(user));
+    return true;
   }
   /*
 
@@ -140,7 +142,7 @@ class Authorization {
 
   */
 
-  logIn(password, username) {
+  logIn(username, password) {
     const user = JSON.parse(localStorage.getItem(username));
 
     if (!user) throw new Error("User does not exist");
@@ -150,37 +152,38 @@ class Authorization {
   }
 }
 
-const product1 = new Product("id1", "test1", "desc1", 100, "link1");
-const product2 = new Product("id2", "test2", "desc2", 50, "link2");
+// const product1 = new Product("id1", "test1", "desc1", 100, "link1");
+// const product2 = new Product("id2", "test2", "desc2", 50, "link2");
 // const products = [product1, product2];
 
-const basket1 = new Basket();
-basket1.add(product1);
-basket1.add(product2);
+// const basket1 = new Basket();
+// basket1.add(product1);
+// basket1.add(product2);
 // basket1.delete(product1.id);
 // basket1.clear();
 // basket1.increase(product2.id);
 // basket1.decrease(product1.id);
 // console.log(basket1.products);
 
-const user1 = new User("name1", "email1", "password1", "logIn1");
+// const user1 = new User("name1", "email1", "password1", "logIn1");
 // user1.basket.add(product1);
 // user1.basket.add(product2);
 // user1.deposit(500);
 // user1.checkout();
 
-console.log(user1);
+// console.log(user1);
 
-const authorization1 = new Authorization();
+// const authorization1 = new Authorization();
 // authorization1.signUp(user1);
 // authorization1.signUp(user1);
-authorization1.logIn(user1.password, user1.logIn);
-console.log(authorization1.logIn(user1.password, user1.logIn));
+//authorization1.logIn(user1.password, user1.logIn);
+// console.log(authorization1.logIn(user1.password, user1.logIn));
 
 class Store {
   constructor() {
     this.currentUser = null;
     this.products = null;
+    this.auth = new Authorization();
   }
 
   //   <li>
@@ -193,6 +196,28 @@ class Store {
 
   renderPage() {
     this.getData();
+
+    document.querySelector("#main").innerHTML = `
+    <h1 class="title">Best e-commerce ever</h1>
+    <section>
+      <ul class="products-list">
+      </ul>
+    </section>
+    `;
+
+    this.renderProducts();
+    console.log("renderPage");
+    document
+      .querySelector("#login")
+      .addEventListener("click", this.renderLoginPage);
+
+    document
+      .querySelector("#sign-up")
+      .addEventListener("click", this.renderSignUpPage);
+  }
+
+  renderProducts() {
+    const productsList = document.querySelector(".products-list");
     this.products.forEach(({ id, name, desc, price, img }) => {
       let li = document.createElement("li");
       li.innerHTML = `
@@ -205,7 +230,62 @@ class Store {
     });
   }
 
+  renderLoginPage = () => {
+    document.querySelector("#main").innerHTML = `
+    <form>
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username">
+    <label for="password">Password</label>
+    <input type="text" id="password" name="password">
+    <button type="submit" id="submit">Login</button>
+    </form>
+    `;
+    document
+      .querySelector("#submit")
+      .addEventListener("click", this.handleLogin);
+  };
+
+  handleLogin = (event) => {
+    event.preventDefault();
+    const username = document.querySelector("#username").value;
+    const password = document.querySelector("#password").value;
+    this.auth.logIn(username, password);
+    this.renderPage();
+  };
+
+  renderSignUpPage = () => {
+    document.querySelector("#main").innerHTML = `
+    <form>
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name">
+    <label for="email">Email</label>
+    <input type="text" id="email" name="email">
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username">
+    <label for="password">Password</label>
+    <input type="text" id="password" name="password">
+    <button type="submit" id="submit">Sign Up</button>
+    </form>
+    `;
+    document
+      .querySelector("#submit")
+      .addEventListener("click", this.handleSignUp);
+  };
+
+  handleSignUp = (event) => {
+    event.preventDefault();
+    const name = document.querySelector("#name").value;
+    const email = document.querySelector("#email").value;
+    const username = document.querySelector("#username").value;
+    const password = document.querySelector("#password").value;
+    const result = this.auth.signUp(name, email, username, password);
+
+    if (!result) throw new Error();
+    this.renderLoginPage();
+  };
+
   getData() {
+    if (this.products !== null) return;
     this.products = data.map(
       ({ id, name, desc, price, img }) =>
         new Product(id, name, desc, price, img)
@@ -213,6 +293,26 @@ class Store {
   }
 }
 
+class User1 {
+  constructor(name, email) {
+    this.name;
+  }
+}
+
+class AuthorizedUser extends User1 {
+  constructor() {
+    super();
+  }
+}
+let johnUser = new User1("John");
+let MarryUser = new User1("Marry");
+
+let newAuthUser = new AuthorizedUser();
+console.log(newAuthUser);
+
+new User("name");
+new AuthorizedUser().name = new AuthorizedUser("name1");
+
 const store1 = new Store();
 store1.renderPage();
-console.log(store1);
+// console.log(store1);
